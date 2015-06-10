@@ -12,6 +12,7 @@ MQTTStore.prototype = {
 	tree: null,
 	get: get,
 	query: query,
+	match: match,
 	set: set
 };
 
@@ -21,6 +22,13 @@ function get(key) {
 
 function query(key) {
 	return get_all(split(key), this.tree);
+}
+
+function match(key) {
+	var exact = this.get(key);
+	var results = [];
+	if (exact !== undefined) results.push(exact);
+	return results.concat(get_matching(key, this.tree));
 }
 
 function set(key, value) {
@@ -70,6 +78,22 @@ function get_all(path, tree) {
 	var next_tree = tree.children[next];
 	if (!next_tree) return [];
 	return get_all(path.slice(1), next_tree);
+}
+
+function get_matching(path, tree) {
+	if (!path.length) return tree.value;
+	var multi = tree.children["#"];
+	var single = tree.children["+"];
+
+	var next = path[0];
+	var next_tree = tree.children[next];
+
+	var rest = path.slice(1);
+	return [multi, single, next_tree]
+		.reduce(function(all, subtree) {
+			if (subtree) return all.concat(get_matching(res, subtree));
+			return all;
+		}, []);
 }
 
 function all_values(tree) {
