@@ -28,7 +28,7 @@ function match(key) {
 	var exact = this.get(key);
 	var results = [];
 	if (exact !== undefined) results.push(exact);
-	return results.concat(get_matching(key, this.tree));
+	return results.concat(get_matching(split(key), this.tree));
 }
 
 function set(key, value) {
@@ -64,8 +64,11 @@ function get_one(path, tree) {
 }
 
 function get_all(path, tree) {
-	if (!path.length)
-		return [tree.value];
+	if (!path.length) {
+		var value = tree.value;
+		if (value !== undefined) return [value];
+		return [];
+	}
 
 	var next = path[0];
 
@@ -81,7 +84,12 @@ function get_all(path, tree) {
 }
 
 function get_matching(path, tree) {
-	if (!path.length) return tree.value;
+	if (!path.length) {
+		var value = tree.value;
+		if (value !== undefined) return [tree.value];
+		return [];
+	}
+
 	var multi = tree.children["#"];
 	var single = tree.children["+"];
 
@@ -89,15 +97,16 @@ function get_matching(path, tree) {
 	var next_tree = tree.children[next];
 
 	var rest = path.slice(1);
+
 	return [multi, single, next_tree]
-		.reduce(function(all, subtree) {
-			if (subtree) return all.concat(get_matching(res, subtree));
+		.reduce(function (all, subtree) {
+			if (subtree) return all.concat(get_matching(rest, subtree));
 			return all;
 		}, []);
 }
 
 function all_values(tree) {
-	return values(tree.children).map(function(subtree) {
+	return values(tree.children).map(function (subtree) {
 		var all = all_values(subtree);
 		var current = subtree.value;
 		if (current !== undefined)
@@ -111,7 +120,7 @@ function keys(object) {
 }
 
 function values(object) {
-	return keys(object).map(function(key) {
+	return keys(object).map(function (key) {
 		return object[key];
 	});
 }
