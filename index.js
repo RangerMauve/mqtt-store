@@ -82,9 +82,13 @@ function get_all(path, tree) {
 
 function get_matching(path, tree) {
 	if (!path.length) {
+		var results = [];
 		var value = tree.value;
-		if (value !== undefined) return [tree.value];
-		return [];
+		if (value !== undefined) results.push(value);
+		var multi = tree.children["#"];
+		if (multi && multi.value)
+			results.push(multi.value);
+		return results;
 	}
 
 	var multi = tree.children["#"];

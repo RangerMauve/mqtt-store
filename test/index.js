@@ -122,17 +122,25 @@ describe("MQTTStore", function () {
 			assert.deepEqual(values, ["4"], "is an array with one 4");
 		});
 
+		it("should return matches on multi wildcards that match the end of the topic", function () {
+			store.set("5/5/#", "5");
+			var values = store.match("5/5");
+			assert.deepEqual(values, ["5"], "is an array with one 5");
+		});
+
 		it("should find all wildcards that match the topic", function () {
-			store.set("2/+/2", "2");
-			store.set("2/2/2", "2");
-			store.set("2/#", "2");
-			var values = store.match("2/2/2");
-			assert.deepEqual(values, ["2", "2", "2"], "is array with 3 2s");
+			store.set("6/+/6", "6");
+			store.set("6/6/6", "6");
+			store.set("6/#", "6");
+			var values = store.match("6/6/6");
+			assert.deepEqual(values, ["6", "6", "6"], "is array with 3 6s");
 		});
 
 		it("shouldn't return undefiend matches (ones that got unset)", function () {
-			store.set("3/3/3", "3");
-			store.set("3/3/3", undefined);
+			store.set("7/7/7", "7");
+			store.set("7/7/7", undefined);
+			var values = store.match("7/7/7");
+			assert.deepEqual(values, [], "it is an empty array");
 		});
 	});
 });
