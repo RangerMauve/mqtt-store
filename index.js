@@ -25,10 +25,7 @@ function query(key) {
 }
 
 function match(key) {
-	var exact = this.get(key);
-	var results = [];
-	if (exact !== undefined) results.push(exact);
-	return results.concat(get_matching(split(key), this.tree));
+	return get_matching(split(key), this.tree);
 }
 
 function set(key, value) {
@@ -98,11 +95,16 @@ function get_matching(path, tree) {
 
 	var rest = path.slice(1);
 
-	return [multi, single, next_tree]
+	var results = [];
+
+	if (multi && multi.value)
+		results.push(multi.value);
+
+	return results.concat([single, next_tree]
 		.reduce(function (all, subtree) {
 			if (subtree) return all.concat(get_matching(rest, subtree));
 			return all;
-		}, []);
+		}, []));
 }
 
 function all_values(tree) {

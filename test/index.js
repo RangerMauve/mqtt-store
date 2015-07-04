@@ -104,6 +104,24 @@ describe("MQTTStore", function () {
 			assert.deepEqual(values, [], "is an empty array");
 		});
 
+		it("should return direct matches only once", function () {
+			store.set("2/2", "2");
+			var values = store.match("2/2");
+			assert.deepEqual(values, ["2"], "is an array with one 2");
+		});
+
+		it("should return matches on single wildcards", function () {
+			store.set("3/+", "3");
+			var values = store.match("3/3");
+			assert.deepEqual(values, ["3"], "is an array with one 3");
+		});
+
+		it("should return matches on multi wildcards", function () {
+			store.set("4/#", "4");
+			var values = store.match("4/4");
+			assert.deepEqual(values, ["4"], "is an array with one 4");
+		});
+
 		it("should find all wildcards that match the topic", function () {
 			store.set("2/+/2", "2");
 			store.set("2/2/2", "2");
