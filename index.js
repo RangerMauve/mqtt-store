@@ -17,6 +17,16 @@ MQTTStore.prototype = {
 	set: set
 };
 
+
+function Tree() {
+	this.children = [];
+}
+
+Tree.prototype = {
+	children: [],
+	value: null
+};
+
 function get(key) {
 	return get_one(split(key), this.tree);
 }
@@ -139,12 +149,3 @@ function flatten(prev, current) {
 function split(path) {
 	return path.split("/");
 }
-
-function Tree() {
-	this.children = [];
-}
-
-Tree.prototype = {
-	children: [],
-	value: null
-};
