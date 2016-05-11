@@ -1,3 +1,4 @@
+"use strict";
 module.exports = MQTTStore;
 
 function MQTTStore() {
@@ -33,22 +34,18 @@ function set(key, value) {
 	return value;
 }
 
-function remove_one(path, tree) {
-	if (!path.length) return;
-	var next = path[0];
-	if (!(next in tree.children)) return;
-	return remove_one(path.slice(1), tree);
-}
-
 function set_one(path, tree, value) {
-	if (!path.length) return tree.value = value;
+	if (!path.length) {
+		tree.value = value;
+		return;
+	}
 	var next = path[0];
 	var children = tree.children;
 	var next_tree = children[next];
-	if (!next_tree)
-		next_tree = children[next] = {
-			children: {}
-		};
+	if (!next_tree) {
+		next_tree = new Tree();
+		children[next] = next_tree;
+	}
 	set_one(path.slice(1), tree.children[next], value);
 }
 
@@ -80,15 +77,19 @@ function get_all(path, tree) {
 	return get_all(path.slice(1), next_tree);
 }
 
+function get_tree_values(tree) {
+	var results = [];
+	var value = tree.value;
+	if (value !== undefined) results.push(value);
+	var multi = tree.children["#"];
+	if (multi && multi.value)
+		results.push(multi.value);
+	return results;
+}
+
 function get_matching(path, tree) {
 	if (!path.length) {
-		var results = [];
-		var value = tree.value;
-		if (value !== undefined) results.push(value);
-		var multi = tree.children["#"];
-		if (multi && multi.value)
-			results.push(multi.value);
-		return results;
+		return get_tree_values(tree);
 	}
 
 	var multi = tree.children["#"];
@@ -138,3 +139,12 @@ function flatten(prev, current) {
 function split(path) {
 	return path.split("/");
 }
+
+function Tree() {
+	this.children = [];
+}
+
+Tree.prototype = {
+	children: [],
+	value: null
+};
