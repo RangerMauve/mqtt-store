@@ -4,7 +4,7 @@
   "description": "Store and retrieve data using MQTT keypaths",
   "main": "index.js",
   "scripts": {
-    "test": "node_modules/.bin/mocha"
+    "test": "node test"
   },
   "repository": {
     "type": "git",
