@@ -24,7 +24,7 @@ function Tree() {
 
 Tree.prototype = {
 	children: [],
-	value: null
+	value: undefined
 };
 
 function get(key) {
