@@ -57,7 +57,7 @@ function put(key, value) {
 	var sections = key.split("/");
 	if (!sections.length) return this;
 	var tree = this.tree;
-	put_value(sections, tree, value, 0);
+	putValue(sections, tree, value, 0);
 	return this;
 }
 
@@ -65,24 +65,69 @@ function get(key) {
 	var sections = key.split("/");
 	if (!sections.length) return NO_RESULT;
 	var tree = this.tree;
-	return get_value(sections, tree, 0);
+	return getValue(sections, tree, 0);
 }
 
 function findMatching(pattern) {
 	var sections = pattern.split("/");
-	checkValid(sections);
+	checkPattern(sections);
 	var results = [];
 	if (!sections.length) return results;
 	var tree = this.tree;
-	add_matching(sections, tree, [], results, 0);
+	addMatching(sections, tree, [], results, 0);
 	return results;
 }
 
 function findPatterns(key) {
 	checkBasic(key);
+	var sections = key.split("/");
+	var results = []
+	if(!sections.length) return results;
+	addMatchers(sections, tree, [], results, 0);
+	return results;
 }
 
 // ABSTRACT OPERATIONS
+
+function addMatchers(sections, tree, resultSections, results, index){
+	var hasAll = getChild(tree, WILDCARD_ALL);
+	if(hasAll) addValue(resultSections.concat(WILDCARD_ALL), hasAll, results);
+	
+	var hasOne = getChild(tree, WILDCARD_ONE);
+	if(hasOne) addMatchers(
+		sections,
+		hasOne,
+		resultSections.concat(WILDCARD_ONE),
+		results,
+		index + 1
+	);
+
+	var section = sections[index];
+	var hasSection = getChild(tree, section);
+	if (hasSection) addMatchers(
+		sections,
+		hasOne,
+		resultSections.concat(section),
+		results,
+		index + 1
+	);
+}
+
+function addMatching(sections, tree, resultSections, results, index) {
+	var section = sections[index];
+	if (!section) {
+		addValue(resultSections, tree, results);
+	} else if (section[0] === WILDCARD_ALL) {
+		addAllWildcard(sections, tree, resultSections, results);
+	} else if (section[0] === WILDCARD_ONE) {
+		addOneWildcard(sections, tree, resultSections, results, index);
+	} else {
+		var nextChild = getChild(tree, section);
+		if (nextChild) {
+			addMatching(sections, nextChild, resultSections.concat(section), results, index + 1);
+		}
+	}
+}
 
 function getChild(tree, section) {
 	var child = tree.children[section];
@@ -90,7 +135,7 @@ function getChild(tree, section) {
 	return child;
 }
 
-function put_value(sections, tree, value, index) {
+function putValue(sections, tree, value, index) {
 	var section = sections[index];
 
 	ensureExists(tree, section);
@@ -100,7 +145,7 @@ function put_value(sections, tree, value, index) {
 		existing.hasValue = true;
 		existing.value = value;
 	} else {
-		put_value(sections, existing, value, index + 1);
+		putValue(sections, existing, value, index + 1);
 	}
 }
 
@@ -109,39 +154,23 @@ function ensureExists(tree, section) {
 		tree.children[section] = new Tree();
 }
 
-function get_value(sections, tree, index) {
+function getValue(sections, tree, index) {
 	var section = sections[index];
 	var existing = getChild(tree, section);
 	if (!existing) return NO_RESULT;
 	if (isLast(sections, index))
 		return new Result(sections, existing.value);
-	return get_value(sections, existing, index + 1);
+	return getValue(sections, existing, index + 1);
 }
 
 function isLast(sections, index) {
 	return index === (sections.length - 1);
 }
 
-function add_matching(sections, tree, resultSections, results, index) {
-	var section = sections[index];
-	if (!section) {
-		add_value(resultSections, tree, results);
-	} else if (section[0] === WILDCARD_ALL) {
-		addAllWildcard(sections, tree, resultSections, results);
-	} else if (section[0] === WILDCARD_ONE) {
-		addOneWildcard(sections, tree, resultSections, results, index);
-	} else {
-		var nextChild = getChild(tree, section);
-		if (nextChild) {
-			add_matching(sections, nextChild, resultSections.concat(section), results, index + 1);
-		}
-	}
-}
-
 function addAllWildcard(sections, tree, resultSections, results) {
 	if (resultSections.length)
-		add_value(resultSections, tree, results);
-	add_all_values(resultSections, tree, results);
+		addValue(resultSections, tree, results);
+	addAllValues(resultSections, tree, results);
 }
 
 function addOneWildcard(sections, tree, resultSections, results, index) {
@@ -153,18 +182,18 @@ function addOneWildcard(sections, tree, resultSections, results, index) {
 		var currentKey = names[nameIndex - 1];
 		var currentTree = children[currentKey];
 		var currentSections = resultSections.concat(currentKey);
-		add_matching(sections, currentTree, currentSections, results, index + 1);
+		addMatching(sections, currentTree, currentSections, results, index + 1);
 	}
 }
 
-function add_value(resultSections, tree, results) {
+function addValue(resultSections, tree, results) {
 	if (tree.hasValue) {
 		var value = tree.value;
 		results.push(new Result(resultSections, value));
 	}
 }
 
-function add_all_values(resultSections, tree, results) {
+function addAllValues(resultSections, tree, results) {
 	var names = childNames(tree);
 	var children = tree.children;
 	var length = names.length;
@@ -173,8 +202,8 @@ function add_all_values(resultSections, tree, results) {
 		var currentKey = names[nameIndex - 1];
 		var currentTree = children[currentKey];
 		var currentSections = resultSections.concat(currentKey);
-		add_value(currentSections, currentTree, results);
-		add_all_values(currentSections, currentTree, results);
+		addValue(currentSections, currentTree, results);
+		addAllValues(currentSections, currentTree, results);
 	}
 }
 
@@ -185,7 +214,7 @@ function childNames(tree) {
 
 // Validation functions
 
-function checkValid(sections) {
+function checkPattern(sections) {
 	var length = sections.length;
 	for (var index = 0; index < length; index++) {
 		var current = sections[index];
