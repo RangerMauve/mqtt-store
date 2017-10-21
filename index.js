@@ -75,6 +75,7 @@ function findMatching(pattern) {
 	if (!sections.length) return results;
 	var tree = this.tree;
 	add_matching(sections, tree, [], results, 0);
+	return results;
 }
 
 function findPatterns(key) {
@@ -149,7 +150,7 @@ function addOneWildcard(sections, tree, resultSections, results, index) {
 	var length = names.length;
 	var nameIndex = length;
 	for (; nameIndex; nameIndex--) {
-		var currentKey = names[nameIndex];
+		var currentKey = names[nameIndex - 1];
 		var currentTree = children[currentKey];
 		var currentSections = resultSections.concat(currentKey);
 		add_matching(sections, currentTree, currentSections, results, index + 1);
@@ -169,7 +170,7 @@ function add_all_values(resultSections, tree, results) {
 	var length = names.length;
 	var nameIndex = length;
 	for (; nameIndex; nameIndex--) {
-		var currentKey = names[nameIndex];
+		var currentKey = names[nameIndex - 1];
 		var currentTree = children[currentKey];
 		var currentSections = resultSections.concat(currentKey);
 		add_value(currentSections, currentTree, results);
