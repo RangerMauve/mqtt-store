@@ -30,7 +30,7 @@ test.skip("Basic operations", function (t) {
 	t.end();
 });
 
-test("Searching with pattern", function (t){
+test.skip("Searching with pattern", function (t){
 	t.plan(8);
 	var store = new MQTTStore();
 
@@ -108,6 +108,29 @@ test("Searching with pattern", function (t){
 	},
 	/# wildcard can only be at the end of a pattern/,
 	"Placing wildcard anywhere other than the end throws an error");
+});
+
+test(function (t){
+	t.plan(1);
+	var store = new MQTTStore();
+
+	var all_keys = [
+		"foo/bar/baz",
+		"foo/+/baz",
+		"foo/#"
+	];
+
+	all_keys.forEach(function (key) {
+		store.put(key, key);
+	});
+
+	var results = store.findPatterns("foo/bar/baz");
+	t.deepEqual(
+		sortResults(results),
+		sortResults(all_keys.map(simpleResult)),
+		"Able to find all patterns matching a key"
+	);
+
 });
 
 function simpleResult(key){

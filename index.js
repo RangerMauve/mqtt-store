@@ -15,9 +15,7 @@ MQTTStore.Result = Result;
 function MQTTStore() {
 	if (!(this instanceof MQTTStore))
 		return new MQTTStore();
-	this.tree = {
-		children: {}
-	};
+	this.tree = new Tree();
 }
 
 MQTTStore.prototype = {
@@ -83,6 +81,7 @@ function findPatterns(key) {
 	var sections = key.split("/");
 	var results = []
 	if(!sections.length) return results;
+	var tree = this.tree;
 	addMatchers(sections, tree, [], results, 0);
 	return results;
 }
@@ -92,9 +91,15 @@ function findPatterns(key) {
 function addMatchers(sections, tree, resultSections, results, index){
 	var hasAll = getChild(tree, WILDCARD_ALL);
 	if(hasAll) addValue(resultSections.concat(WILDCARD_ALL), hasAll, results);
-	
+
+	var isEnd = index === sections.length;
+	if(isEnd) {
+		addValue(resultSections, tree, results);
+		return;
+	}
+
 	var hasOne = getChild(tree, WILDCARD_ONE);
-	if(hasOne) addMatchers(
+	if (hasOne) addMatchers(
 		sections,
 		hasOne,
 		resultSections.concat(WILDCARD_ONE),
@@ -106,7 +111,7 @@ function addMatchers(sections, tree, resultSections, results, index){
 	var hasSection = getChild(tree, section);
 	if (hasSection) addMatchers(
 		sections,
-		hasOne,
+		hasSection,
 		resultSections.concat(section),
 		results,
 		index + 1
