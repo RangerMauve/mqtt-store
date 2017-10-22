@@ -4,7 +4,7 @@ var test = require("tape");
 var MQTTStore = require("../");
 var Result = MQTTStore.Result;
 
-test.skip("Basic operations", function (t) {
+test("Basic operations", function (t) {
 	t.plan(6);
 	var store = new MQTTStore();
 	store.put("foo/bar", "baz");
@@ -30,7 +30,7 @@ test.skip("Basic operations", function (t) {
 	t.end();
 });
 
-test.skip("Searching with pattern", function (t){
+test("Searching with pattern", function (t){
 	t.plan(8);
 	var store = new MQTTStore();
 
