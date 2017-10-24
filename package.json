@@ -1,6 +1,6 @@
 {
   "name": "mqtt-store",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Store and retrieve data using MQTT keypaths",
   "main": "index.js",
   "scripts": {

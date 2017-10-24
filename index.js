@@ -23,6 +23,8 @@ MQTTStore.prototype = {
 
 	get: get,
 	put: put,
+	del: del,
+
 	findMatching: findMatching,
 	findPatterns: findPatterns,
 };
@@ -56,7 +58,7 @@ function put(key, value) {
 	if (!sections.length) return this;
 	var tree = this.tree;
 	putValue(sections, tree, value, 0);
-	return this;
+	return new Result(sections, value);
 }
 
 function get(key) {
@@ -64,6 +66,13 @@ function get(key) {
 	if (!sections.length) return NO_RESULT;
 	var tree = this.tree;
 	return getValue(sections, tree, 0);
+}
+
+function del(key) {
+	var sections = key.split("/");
+	if (!sections.length) return NO_RESULT;
+	var tree = this.tree;
+	return delValue(sections, tree, 0);
 }
 
 function findMatching(pattern) {
@@ -163,9 +172,28 @@ function getValue(sections, tree, index) {
 	var section = sections[index];
 	var existing = getChild(tree, section);
 	if (!existing) return NO_RESULT;
-	if (isLast(sections, index))
-		return new Result(sections, existing.value);
+	if (isLast(sections, index)){
+		if (existing.hasValue)
+			return new Result(sections, existing.value);
+		else return NO_RESULT;
+	}
 	return getValue(sections, existing, index + 1);
+}
+
+function delValue(sections, tree, index) {
+	var section = sections[index];
+	var existing = getChild(tree, section);
+	if (!existing) return false;
+	if(isLast(sections, index)){
+		if (existing.hasValue) {
+			existing.hasValue = false;
+			existing.value = null;
+			return true;
+		} else {
+			return false;
+		}
+	}
+	return delValue(sections, existing, index + 1);
 }
 
 function isLast(sections, index) {

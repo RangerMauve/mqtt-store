@@ -5,7 +5,7 @@ var MQTTStore = require("../");
 var Result = MQTTStore.Result;
 
 test("Basic operations", function (t) {
-	t.plan(6);
+	t.plan(9);
 	var store = new MQTTStore();
 	store.put("foo/bar", "baz");
 	t.pass("Able to put simple path into store");
@@ -16,16 +16,25 @@ test("Basic operations", function (t) {
 	var result;
 
 	result = store.get("foo/bar");
-	t.deepEqual(result,  new Result(["foo", "bar"], "baz"));
+	t.deepEqual(result,  new Result(["foo", "bar"], "baz"), "Able to get simple path out");
+
+	result = store.get("foo/baz");
+	t.deepEqual(result, MQTTStore.NO_RESULT, "Getting invalid keys yields NO_RESULT");
 
 	result = store.get("foo/+/#");
-	t.deepEqual(result,  new Result(["foo", "+", "#"], "fizz"));
+	t.deepEqual(result,  new Result(["foo", "+", "#"], "fizz"), "Able to get value with wildcards");
 
 	store.put("foo", "bar");
 	t.pass("Able to put single level path");
 
 	result = store.get("foo");
-	t.deepEqual(result, new Result(["foo"], "bar"));
+	t.deepEqual(result, new Result(["foo"], "bar"), "Able to get single level path");
+
+	result = store.del("foo");
+	t.ok(result, "Got `true` from deleting a key");
+
+	result = store.del("fizz/buzz");
+	t.notok(result, "Got `false` from deleting a key");
 
 	t.end();
 });
@@ -110,7 +119,7 @@ test("Searching with pattern", function (t){
 	"Placing wildcard anywhere other than the end throws an error");
 });
 
-test(function (t){
+test("Finding matching patterns", function (t){
 	t.plan(1);
 	var store = new MQTTStore();
 
