@@ -63,5 +63,5 @@ Deletes the value stored at the key if it exists. Returns `true` if the key cont
 ### `MQTTStore#findMatching(key : String) : Array<Result<Any>>`
 Takes a topic with wildcards and returns all keys that match that topic. Returns an array of Results.
 
-### `MQTTStore#match(key : String) : Array<Result<Any>>`
+### `MQTTStore#findPatterns(key : String) : Array<Result<Any>>`
 Takes a topic and returns all values (that might contain wildcards) that match against that topic. Returns an array of Results.
