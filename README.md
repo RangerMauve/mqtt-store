@@ -54,14 +54,14 @@ There is no configuration for the store currently, can be called either with `ne
 #### `MQTTStore#put(key : String, value : Any)`
 Sets a value in the store. In the background the topic will get split up into a path and will build up a tree. Topics with wildcards get set as through the wildcard was a literal key.
 
-### `MQTTStore#get(key : String) : Result<Any>`
+#### `MQTTStore#get(key : String) : Result<Any>`
 Gets a single value from the store that was set at the given topic. If nothing was set at this topic, then `MQTTStore.NO_RESULT` is returned.
 
-### `MQTTStore#.del(key : String) : Boolean`
+#### `MQTTStore#.del(key : String) : Boolean`
 Deletes the value stored at the key if it exists. Returns `true` if the key contained a value, `false` if the key didn't exist or had no value.
 
-### `MQTTStore#findMatching(key : String) : Array<Result<Any>>`
+#### `MQTTStore#findMatching(key : String) : Array<Result<Any>>`
 Takes a topic with wildcards and returns all keys that match that topic. Returns an array of Results.
 
-### `MQTTStore#findPatterns(key : String) : Array<Result<Any>>`
+#### `MQTTStore#findPatterns(key : String) : Array<Result<Any>>`
 Takes a topic and returns all values (that might contain wildcards) that match against that topic. Returns an array of Results.
